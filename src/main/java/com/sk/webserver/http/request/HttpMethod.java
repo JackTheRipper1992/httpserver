@@ -1,4 +1,4 @@
-package com.sk.webserver.http;
+package com.sk.webserver.http.request;
 
 public enum HttpMethod {
 

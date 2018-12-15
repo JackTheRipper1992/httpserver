@@ -1,9 +1,8 @@
 package com.sk.webserver.http.parser;
 
-import com.sk.webserver.http.HttpMethod;
+import com.sk.webserver.http.request.HttpMethod;
 import com.sk.webserver.http.request.HttpRequest;
 import com.sk.webserver.http.request.HttpRequestBuilder;
-import com.sk.webserver.http.response.Status;
 import com.sk.webserver.utils.HttpUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

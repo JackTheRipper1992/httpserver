@@ -1,7 +1,5 @@
 package com.sk.webserver.http.request;
 
-import com.sk.webserver.http.HttpMethod;
-
 import java.net.URI;
 import java.net.URL;
 import java.util.HashMap;
