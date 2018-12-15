@@ -14,7 +14,7 @@ import static com.sk.webserver.http.response.HttpResponseUtils.statuses;
 
 public class HttpResponse implements Closeable {
 
-    private final OutputStream out; // the underlying output stream
+    private final OutputStream out;
     private final HttpRequest httpRequest;
     private Map<String, String> headers = new HashMap<>();
     private boolean responseFlushed;
@@ -37,8 +37,7 @@ public class HttpResponse implements Closeable {
     /**
      * Sends an error response with the given status and detailed message.
      * An HTML body is created containing the status and its description,
-     * as well as the message, which is escaped using the
-     * {@link HttpResponseUtils#escapeHTML escape} method.
+     * as well as the message.
      *
      * @param status the response status
      * @param text   the text body (sent as text/html)
@@ -71,8 +70,7 @@ public class HttpResponse implements Closeable {
         byte[] content = text.getBytes("UTF-8");
         sendHeaders(status, content.length, -1,
                 "W/\"" + Integer.toHexString(text.hashCode()) + "\"",
-                "text/html; charset=utf-8", null);
-        //OutputStream out = getBody(); //todo kakasa
+                "text/html; charset=utf-8");
         if (out != null)
             out.write(content);
     }
@@ -86,49 +84,25 @@ public class HttpResponse implements Closeable {
      * properly calculated as well, with a 200 status changed to a 206 status.
      *
      * @param status       the response status
-     * @param length       the response body length, or zero if there is no body,
-     *                     or negative if there is a body but its length is not yet known
+     * @param length       the response body length
      * @param lastModified the last modified date of the response resource,
-     *                     or non-positive if unknown. A time in the future will be
-     *                     replaced with the current system time.
      * @param etag         the ETag of the response resource, or null if unknown
      *                     (see RFC2616#3.11)
      * @param contentType  the content type of the response resource, or null
      *                     if unknown (in which case "application/octet-stream" will be sent)
-     * @param range        the content range that will be sent, or null if the
-     *                     entire resource will be sent
      * @throws IOException if an error occurs
      */
-    public void sendHeaders(int status, long length, long lastModified,
-                            String etag, String contentType, long[] range) throws IOException {
-        if (range != null) {
-            addHeader("Content-Range", "bytes " + range[0] + "-" +
-                    range[1] + "/" + (length >= 0 ? length : "*"));
-            length = range[1] - range[0] + 1;
-            if (status == 200)
-                status = 206;
-        }
+    public void sendHeaders(final int status,
+                            final long length,
+                            final long lastModified,
+                            final String etag,
+                            final String contentType) throws IOException {
+
         String ct = headers.get("Content-Type");
         if (ct == null) {
             ct = contentType != null ? contentType : "application/octet-stream";
             addHeader("Content-Type", ct);
         }
-        /*if (!headers.containsKey("Content-Length") && !headers.containsKey("Transfer-Encoding")) {
-            // RFC2616#3.6: writeResponse encodings are case-insensitive and must not be sent to an HTTP/1.0 client
-            boolean isHTTP11 = httpRequest != null && httpRequest.getProtocolVersion().endsWith("1.1");
-            String accepted = httpRequest == null ? null : httpRequest.getHeaders().get("Accept-Encoding");
-            List<String> encodings = Arrays.asList(splitElements(accepted, true));
-            String compression = encodings.contains("gzip") ? "gzip" :
-                    encodings.contains("deflate") ? "deflate" : null;
-            if (compression != null && (length < 0 || length > 300) && isCompressible(ct) && isHTTP11) {
-                addHeader("Transfer-Encoding", "chunked"); // compressed data is always unknown length
-                addHeader("Content-Encoding", compression);
-            } else if (length < 0 && isHTTP11) {
-                addHeader("Transfer-Encoding", "chunked"); // unknown length
-            } else if (length >= 0) {
-                addHeader("Content-Length", Long.toString(length)); // known length
-            }
-        }*/
         if (length >= 0) {
             addHeader("Content-Length", Long.toString(length)); // known length
         }
@@ -147,12 +121,10 @@ public class HttpResponse implements Closeable {
     /**
      * Sends the response headers with the given response status.
      * A Date header is added if it does not already exist.
-     * If the response has a body, the Content-Length/Transfer-Encoding
-     * and Content-Type headers must be set before sending the headers.
      *
      * @param status the response status
      * @throws IOException if an error occurs or headers were already sent
-     * @see #sendHeaders(int, long, long, String, String, long[])
+     * @see #sendHeaders(int, long, long, String, String)
      */
     public void sendHeaders(int status) throws IOException {
 
@@ -234,7 +206,7 @@ public class HttpResponse implements Closeable {
             throw new IOException("malformed URL: " + url);
         }
         headers.put("Location", url);
-        // some user-agents expect a body, so we send it
+
             sendError(301, "Permanently moved to " + url);
     }
 }

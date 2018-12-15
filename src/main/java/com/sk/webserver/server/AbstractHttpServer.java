@@ -1,7 +1,7 @@
 package com.sk.webserver.server;
 
 import com.sk.webserver.http.handlers.Handler;
-import com.sk.webserver.http.request.HttpRequest;
+import com.sk.webserver.http.request.HttpMethod;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -10,27 +10,28 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.*;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
+import static java.lang.String.join;
+
 public abstract class AbstractHttpServer implements Server {
 
     private static final Logger logger = LoggerFactory.getLogger(AbstractHttpServer.class.getName());
 
-    private final int port;
-    private final int socketTimeout = 50000;
-    private ServerSocket serverSocket;
-    private Map<String,Handler> contextMap = new HashMap<>();
-    private ServerContext serverContext;
+    protected final int port;
+    protected final int socketTimeout = 50000;
+    protected boolean isHealthCheckEnabled;
+    protected ServerSocket serverSocket;
+    protected Map<String,Map<HttpMethod,Handler>> contextMap = new HashMap<>(); //path -> Method,Handler mapping
+    protected ServerContext serverContext;
 
-    private ExecutorService executorService = Executors.newCachedThreadPool();
-    private ExecutorService singleThreadExecutor = Executors.newSingleThreadExecutor();
-
-    private final ScheduledExecutorService scheduledExecutorService = Executors.newScheduledThreadPool(1);
+    protected ExecutorService executorService = Executors.newCachedThreadPool();
+    protected ExecutorService singleThreadExecutor = Executors.newSingleThreadExecutor();
+    protected final ScheduledExecutorService scheduledExecutorService = Executors.newScheduledThreadPool(1);
 
     public AbstractHttpServer(int port) throws IOException {
         this.port = port;
@@ -40,6 +41,31 @@ public abstract class AbstractHttpServer implements Server {
         if (serverSocket != null)
             return;
         logger.info("*** Starting Http Server ***");
+
+        /**
+         * If the Request-URI is an asterisk ("*"), the OPTIONS request is
+         intended to apply to the server in general rather than to a specific
+         resource. Since a server's communication options typically depend on
+         the resource, the "*" request is only useful as a "ping" or "no-op"
+         type of method; it does nothing beyond allowing the client to test
+         the capabilities of the server.
+         */
+        Map<HttpMethod, Handler> optionsHandlerMap = new HashMap<>();
+        optionsHandlerMap.put(HttpMethod.OPTIONS, (httpRequest, httpResponse) -> {
+            HttpMethod method = httpRequest.getMethod();
+            if(method.equals(HttpMethod.OPTIONS)) {
+                Set<String> methods = new LinkedHashSet<>();
+                methods.addAll(Arrays.asList("GET", "HEAD", "TRACE", "OPTIONS")); // built-in methods
+                httpResponse.getHeaders().put("Allow", join(", ", methods));
+                httpResponse.getHeaders().put("Content-Length", "0");
+                httpResponse.sendHeaders(200);
+            }else {
+                httpResponse.sendError(501); // unsupported method
+            }
+            return 0;
+        });
+
+        contextMap.put("/*", optionsHandlerMap);
 
         serverContext = new ServerContext(contextMap);
         createServerSocket();
@@ -73,14 +99,16 @@ public abstract class AbstractHttpServer implements Server {
             }
         });
 
-        scheduledExecutorService.scheduleAtFixedRate(() -> {
-            try {
-                createHealthCheckRequest();
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
+        if(isHealthCheckEnabled) {
+            scheduledExecutorService.scheduleAtFixedRate(() -> {
+                try {
+                    createHealthCheckRequest();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
 
-        },1000, 2000,TimeUnit.MILLISECONDS);
+            }, 1000, 2000, TimeUnit.MILLISECONDS);
+        }
         logger.info("*** Http Server started successfully on http://{}:{} !***",serverSocket.getInetAddress().getCanonicalHostName(),serverSocket.getLocalPort());
 
     }
@@ -151,11 +179,17 @@ public abstract class AbstractHttpServer implements Server {
         return serverSocket.getInetAddress().getHostName();
     }
 
-    public Map<String, Handler> getContextMap() {
+    public Map<String,Map<HttpMethod,Handler>> getContextMap() {
         return contextMap;
     }
 
     public ServerContext getServerContext(){
         return serverContext;
     }
+
+    @Override
+    public void isHealthCheckEnabled(boolean isHealthCheckEnabled) {
+        this.isHealthCheckEnabled = isHealthCheckEnabled;
+    }
+
 }

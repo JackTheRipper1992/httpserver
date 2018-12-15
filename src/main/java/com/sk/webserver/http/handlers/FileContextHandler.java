@@ -7,7 +7,6 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.Date;
 import java.util.Map;
 
 import static com.sk.webserver.http.response.HttpResponseUtils.getContentType;
@@ -20,7 +19,7 @@ public class FileContextHandler implements Handler {
     }
 
     @Override
-    public int execute(HttpRequest httpRequest, com.sk.webserver.http.response.HttpResponse httpResponse) throws IOException {
+    public int execute(HttpRequest httpRequest, HttpResponse httpResponse) throws IOException {
         return getFile(root, httpRequest.getUri().getPath(), httpRequest, httpResponse);
     }
 
@@ -69,11 +68,11 @@ public class FileContextHandler implements Handler {
             case 200:
                 // send OK response
                 httpResponse.sendHeaders(200, len, lastModified, etag,
-                        getContentType(file.getName(), "application/octet-stream"), null);
+                        getContentType(file.getName(), "application/octet-stream"));
                 // send body
                 InputStream in = new FileInputStream(file);
                 try {
-                    httpResponse.sendBody(in, len, null);
+                    httpResponse.sendBody(in, len);
                 } finally {
                     in.close();
                 }

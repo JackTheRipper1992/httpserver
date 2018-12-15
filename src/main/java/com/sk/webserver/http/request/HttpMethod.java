@@ -3,9 +3,6 @@ package com.sk.webserver.http.request;
 public enum HttpMethod {
 
     GET,
-    PUT,
-    POST,
-    DELETE,
     HEAD,
     OPTIONS,
     TRACE;
