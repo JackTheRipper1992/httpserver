@@ -6,12 +6,8 @@ import com.sk.webserver.utils.HttpUtils;
 import java.io.*;
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.util.Arrays;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
-import java.util.zip.DeflaterOutputStream;
-import java.util.zip.GZIPOutputStream;
 
 import static com.sk.webserver.http.response.HttpResponseUtils.escapeHTML;
 import static com.sk.webserver.http.response.HttpResponseUtils.statuses;
@@ -118,7 +114,7 @@ public class HttpResponse implements Closeable {
             addHeader("Content-Type", ct);
         }
         /*if (!headers.containsKey("Content-Length") && !headers.containsKey("Transfer-Encoding")) {
-            // RFC2616#3.6: transfer encodings are case-insensitive and must not be sent to an HTTP/1.0 client
+            // RFC2616#3.6: writeResponse encodings are case-insensitive and must not be sent to an HTTP/1.0 client
             boolean isHTTP11 = httpRequest != null && httpRequest.getProtocolVersion().endsWith("1.1");
             String accepted = httpRequest == null ? null : httpRequest.getHeaders().get("Accept-Encoding");
             List<String> encodings = Arrays.asList(splitElements(accepted, true));
@@ -170,23 +166,15 @@ public class HttpResponse implements Closeable {
 
     }
 
-    public void sendBody(InputStream body, long length, long[] range) throws IOException {
+    public void sendBody(final InputStream body, final long length) throws IOException {
         if (out != null) {
-            if (range != null) {
-                long offset = range[0];
-                length = range[1] - range[0] + 1;
-                while (offset > 0) {
-                    long skip = body.skip(offset);
-                    if (skip == 0)
-                        throw new IOException("can't skip to " + range[0]);
-                    offset -= skip;
-                }
-            }
-            transfer(body, out, length);
+            writeResponse(body, out, length);
         }
     }
 
-    public static void transfer(InputStream in, OutputStream out, long len) throws IOException {
+    public static void writeResponse(final InputStream in,
+                                     final OutputStream out,
+                                     long len) throws IOException {
         if (len == 0 || out == null && len < 0 && in.read() < 0)
             return; // small optimization - avoid buffer creation
         byte[] buf = new byte[4096];

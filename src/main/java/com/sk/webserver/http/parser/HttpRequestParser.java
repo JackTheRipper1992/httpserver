@@ -18,7 +18,6 @@ import java.util.*;
 
 public class HttpRequestParser implements RequestParser {
 
-    public static final int BUFFER = 8192;
     private static final Logger logger = LoggerFactory.getLogger(HttpRequestParser.class.getName());
 
     private final Socket socket;
@@ -33,15 +32,12 @@ public class HttpRequestParser implements RequestParser {
     public HttpRequest parse() throws IOException {
 
         BufferedReader in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
-
         createHeaderAndParams(httpRequestBuilder,in);
-
         return httpRequestBuilder.create();
+
     }
 
     private void createHeaderAndParams(HttpRequestBuilder httpRequestBuilder, BufferedReader in) throws IOException {
-
-
         // read first line of request header
         readFirstLine(in,httpRequestBuilder);
 
@@ -53,12 +49,8 @@ public class HttpRequestParser implements RequestParser {
             }
             line = in.readLine();
         }
-
         final InetAddress inetAddress = this.socket.getInetAddress();
-        if (null != inetAddress.getHostAddress()) {
-            httpRequestBuilder.addHeader("remote-addr", inetAddress.getHostAddress());
-            httpRequestBuilder.addHeader("http-client-ip", inetAddress.getHostAddress());
-        }
+
     }
 
     private void readFirstLine(BufferedReader in, HttpRequestBuilder httpRequestBuilder) throws IOException {
@@ -93,39 +85,6 @@ public class HttpRequestParser implements RequestParser {
             httpRequestBuilder.setProtocolVersion(protocolVersion);
         } catch (URISyntaxException use) {
             throw new IOException("invalid URI: " + use.getMessage());
-        }
-    }
-
-    private void readParams(String parms, Map<String, List<String>> params) {
-
-        if (parms == null) {
-            httpRequestBuilder.setQueryParameterString("");
-            return;
-        }
-
-        httpRequestBuilder.setQueryParameterString(parms);
-        StringTokenizer st = new StringTokenizer(parms, "&");
-        while (st.hasMoreTokens()) {
-            String e = st.nextToken();
-            int sep = e.indexOf('=');
-            String key;
-            String value;
-
-            if (sep >= 0) {
-                key = HttpUtils.decodePercent(e.substring(0, sep)).trim();
-                value = HttpUtils.decodePercent(e.substring(sep + 1));
-            } else {
-                key = HttpUtils.decodePercent(e).trim();
-                value = "";
-            }
-
-            List<String> values = params.get(key);
-            if (values == null) {
-                values = new ArrayList<String>();
-                params.put(key, values);
-            }
-
-            values.add(value);
         }
     }
 

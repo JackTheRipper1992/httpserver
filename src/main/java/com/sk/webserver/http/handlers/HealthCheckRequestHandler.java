@@ -7,8 +7,8 @@ import java.io.IOException;
 
 public class HealthCheckRequestHandler implements Handler{
 
-    private final int status = 200;
-    private final String text = "OK";
+    private static final int status = 200;
+    private static final String text = "OK";
 
     @Override
     public int execute(HttpRequest httpRequest, HttpResponse httpResponse) throws IOException {

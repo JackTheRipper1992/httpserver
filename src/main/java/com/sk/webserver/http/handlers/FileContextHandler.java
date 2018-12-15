@@ -52,8 +52,8 @@ public class FileContextHandler implements Handler {
      * handled according to the RFC.
      *
      * @param file the existing and readable file whose contents are served
-     * @param req the request
-     * @param resp the response into which the content is written
+     * @param httpRequest the request
+     * @param httpResponse the response into which the content is written
      * @throws IOException if an error occurs
      */
     public static void serveFileContent(File file, HttpRequest httpRequest, HttpResponse httpResponse) throws IOException {
