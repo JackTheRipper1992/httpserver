@@ -11,6 +11,8 @@ You can also pass the optional 3rd argument that will enable the health check fo
 
 As the main purpose of this server is to fetch the file/directory from the hosted root, server is configured to only cater HTTP GET and OPTIONS requests. You can check the server OPTIONS by sending OPTIONS http request /* .
 
+The server is capable of serving same URI with different HTTP method by different handlers. For this I have contextMap declared as a Map in AbstractHttpServer. The context map has a path as a key and value for the key path is another map having key is HTTP method and corresponding handler that will handle the request.
+
 
 # Improvements :
 
