@@ -3,7 +3,6 @@ package com.sk.webserver.http.handlers;
 import com.sk.webserver.http.request.HttpRequest;
 import com.sk.webserver.http.response.HttpResponse;
 import com.sk.webserver.http.response.Status;
-import com.sk.webserver.http.server.HttpServer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -16,7 +15,6 @@ import java.util.Map;
 
 import static com.sk.webserver.http.response.HttpResponseUtils.getContentType;
 import static com.sk.webserver.http.utils.HttpUtils.*;
-import static org.apache.commons.lang3.StringEscapeUtils.escapeHtml4;
 
 public class FileContextHandler implements Handler {
 
@@ -60,7 +58,7 @@ public class FileContextHandler implements Handler {
         } else if (relativePath.endsWith("/")) {
             return 404; // non-directory ending with slash (File constructor removed it)
         } else {
-            serveFileContent(file, httpRequest, httpResponse);
+            serveFile(file, httpRequest, httpResponse);
         }
         return 0;
     }
@@ -105,9 +103,9 @@ public class FileContextHandler implements Handler {
      * @param httpResponse the response into which the content is written
      * @throws IOException
      */
-    public static void serveFileContent(final File file,
-                                        final HttpRequest httpRequest,
-                                        final HttpResponse httpResponse) throws IOException {
+    public static void serveFile(final File file,
+                                 final HttpRequest httpRequest,
+                                 final HttpResponse httpResponse) throws IOException {
         long len = file.length();
         long lastModified = file.lastModified();
         String etag = "W/\"" + lastModified + "\""; // a weak tag based on date

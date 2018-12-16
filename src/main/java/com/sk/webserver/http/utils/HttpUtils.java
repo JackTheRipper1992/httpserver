@@ -19,16 +19,6 @@ public class HttpUtils {
     private static final Logger logger = LoggerFactory.getLogger(HttpUtils.class.getName());
     private static final String datePattern = "EEE, dd MMM yyyy HH:mm:ss z";
 
-    public static String decodePercent(String str) {
-        String decoded = null;
-        try {
-            decoded = URLDecoder.decode(str, "UTF8");
-        } catch (UnsupportedEncodingException ignored) {
-            logger.error("Encoding not supported, ignored", ignored);
-        }
-        return decoded;
-    }
-
     public static byte[] getBytes(String... strings) {
         int n = 0;
         for (String s : strings)
@@ -45,7 +35,6 @@ public class HttpUtils {
         return DateTimeFormatter.RFC_1123_DATE_TIME
                 .format(ZonedDateTime.now(ZoneOffset.UTC));
     }
-
 
     public static String formatDate(long lastModified) {
         final Date date = new Date(lastModified);

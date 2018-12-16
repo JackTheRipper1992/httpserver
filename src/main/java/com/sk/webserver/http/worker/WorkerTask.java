@@ -81,16 +81,23 @@ public class WorkerTask implements Task {
                 && !"close".equalsIgnoreCase(httpResponse.getHeaders().get("Connection")) && httpRequest.getProtocolVersion().endsWith("1.1"));
     }
 
-    private void handleRequest(HttpRequest httpRequest, HttpResponse httpResponse) throws IOException {
-        Handler handler = getContext(httpRequest.getPath(),httpRequest.getMethod());
+    private void handleRequest(final HttpRequest httpRequest,
+                               final HttpResponse httpResponse) throws IOException {
+        Handler handler = getContextHandler(httpRequest.getPath(),httpRequest.getMethod());
         if(handler != null) {
             handler.execute(httpRequest, httpResponse);
         } else
             httpResponse.sendError(Status.NOT_IMPLEMENTED.getRequestStatus());
     }
 
-    public Handler getContext(String path,
-                              final HttpMethod httpMethod) {
+    /**
+     *
+     * @param path for which handler would be returned
+     * @param httpMethod method and the path for which the handler is configured for
+     * @return Handler that will handle the http request
+     */
+    public Handler getContextHandler(String path,
+                                     final HttpMethod httpMethod) {
 
         Map<String, Map<HttpMethod,Handler>> contextMap = serverContext.getContextMap();
         for (path = trimRight(path, '/'); path != null; path = getParentPath(path)) {
