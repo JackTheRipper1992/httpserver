@@ -83,13 +83,12 @@ public class FileContextHandler implements Handler {
 
     /**
      * Serves the contents of a file, with its corresponding content type,
-     * last modification time, etc. conditional and partial retrievals are
-     * handled according to the RFC.
+     * last modification time.
      *
-     * @param file the existing and readable file whose contents are served
+     * @param file file whose contents are served
      * @param httpRequest the request
      * @param httpResponse the response into which the content is written
-     * @throws IOException if an error occurs
+     * @throws IOException
      */
     public static void serveFileContent(final File file,
                                         final HttpRequest httpRequest,
