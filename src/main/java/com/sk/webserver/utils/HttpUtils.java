@@ -10,7 +10,10 @@ import java.io.UnsupportedEncodingException;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.net.URLDecoder;
+import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.time.Instant;
+import java.time.LocalDateTime;
 import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
@@ -20,6 +23,7 @@ import java.util.logging.Level;
 public class HttpUtils {
 
     private static final Logger logger = LoggerFactory.getLogger(HttpUtils.class.getName());
+    private static final String datePattern = "EEE, dd MMM yyyy HH:mm:ss z";
 
     public static String decodePercent(String str) {
         String decoded = null;
@@ -48,6 +52,15 @@ public class HttpUtils {
                 .format(ZonedDateTime.now(ZoneOffset.UTC));
     }
 
+
+    public static String formatDate(long lastModified) {
+        final Date date = new Date(lastModified);
+        Instant instant = date.toInstant();
+        LocalDateTime ldt = instant.atOffset(ZoneOffset.UTC).toLocalDateTime();
+        return DateTimeFormatter.RFC_1123_DATE_TIME
+                .format(ldt);
+    }
+
     public static String trimRight(String s, char c) {
         int len = s.length() - 1;
         int end;
@@ -64,5 +77,26 @@ public class HttpUtils {
         path = trimRight(path, '/'); // remove trailing slash
         int slash = path.lastIndexOf('/');
         return slash < 0 ? null : path.substring(0, slash);
+    }
+
+    public static Date getDate(String time) {
+        try {
+            SimpleDateFormat df = new SimpleDateFormat(datePattern, Locale.US);
+            df.setTimeZone(TimeZone.getTimeZone("GMT"));
+            return df.parse(time);
+        } catch (ParseException parseExcepton) {
+
+        }
+        return null;
+
+    }
+
+    public static boolean isMatching(boolean strong, String[] etags, String etag) {
+        if (etag == null || strong && etag.startsWith("W/"))
+            return false;
+        for (String e : etags)
+            if (e.equals("*") || (e.equals(etag) && !(strong && (e.startsWith("W/")))))
+                return true;
+        return false;
     }
 }

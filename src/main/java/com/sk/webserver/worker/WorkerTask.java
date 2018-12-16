@@ -64,7 +64,9 @@ public class WorkerTask implements Task {
                 handleRequest(httpRequest, httpResponse); //handle the request
 
             }catch(Throwable throwable){
-                logger.error("Something really went wrong :" ,throwable);
+                if(throwable instanceof SocketException){
+
+                }
                 if (httpRequest == null) { // error reading request
                     if (throwable instanceof IOException && throwable.getMessage().contains("Request Line Missing"))
                         break; // proceed to close connection - just disconnect
@@ -91,20 +93,9 @@ public class WorkerTask implements Task {
     private void handleRequest(HttpRequest httpRequest, HttpResponse httpResponse) throws IOException {
         Handler handler = getContext(httpRequest.getPath(),httpRequest.getMethod());
         if(handler != null) {
-
             handler.execute(httpRequest, httpResponse);
-
-
-            /*    if (httpRequest.getPath().equals("/*")) {
-                    Set<String> methods = new LinkedHashSet<>();
-                    methods.addAll(Arrays.asList("GET", "HEAD", "TRACE", "OPTIONS")); // built-in methods
-                    httpResponse.getHeaders().put("Allow", join(", ", methods));
-                    httpResponse.getHeaders().put("Content-Length", "0");
-                    httpResponse.sendHeaders(200);
-                }*/
         } else
             httpResponse.sendError(501); // unsupported method
-
     }
 
     public Handler getContext(String path,
