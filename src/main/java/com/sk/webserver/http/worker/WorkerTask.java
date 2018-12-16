@@ -66,7 +66,8 @@ public class WorkerTask implements Task {
                         break;
                     httpResponse.getHeaders().put("Connection", "close");
                     httpResponse.sendError(400, "Invalid request: " + throwable.getMessage());
-                } else if (!httpResponse.isResponseFlushed()) { // if headers were not already sent, we can send an error response
+                } else if (!httpResponse.isResponseFlushed()) {
+                    logger.error(throwable.getMessage(),throwable);
                     httpResponse = new HttpResponse(out,httpRequest); // ignore whatever headers may have already been set
                     httpResponse.getHeaders().put("Connection", "close"); // about to close connection
                     httpResponse.sendError(500, "Error processing request: " + throwable.getMessage());

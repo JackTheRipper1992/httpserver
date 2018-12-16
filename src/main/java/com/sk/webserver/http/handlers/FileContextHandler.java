@@ -3,13 +3,12 @@ package com.sk.webserver.http.handlers;
 import com.sk.webserver.http.request.HttpRequest;
 import com.sk.webserver.http.response.HttpResponse;
 import com.sk.webserver.http.response.Status;
+import com.sk.webserver.http.server.HttpServer;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.net.InetAddress;
-import java.net.URL;
+import java.io.*;
+import java.net.*;
 import java.util.Date;
 import java.util.Formatter;
 import java.util.Locale;
@@ -17,8 +16,11 @@ import java.util.Map;
 
 import static com.sk.webserver.http.response.HttpResponseUtils.getContentType;
 import static com.sk.webserver.http.utils.HttpUtils.*;
+import static org.apache.commons.lang3.StringEscapeUtils.escapeHtml4;
 
 public class FileContextHandler implements Handler {
+
+    private static final Logger logger = LoggerFactory.getLogger(FileContextHandler.class.getName());
 
     public static final int PRECONDITION_FAILED = Status.PRECONDITION_FAILED.getRequestStatus();
     public static final int NOT_MODIFIED = Status.NOT_MODIFIED.getRequestStatus();
@@ -64,16 +66,29 @@ public class FileContextHandler implements Handler {
     }
 
     private String listFiles(File root, String path) {
+
         Formatter f = new Formatter(Locale.US);
         f.format("<!DOCTYPE html>" +
                         "<html><head><title>Index of %s</title></head>%n" +
                         "<body><h1>Index of %s</h1>%n" +
-                        "<pre> Name",
+                        "<pre> Name %n",
                 path, path, "");
         for (File file : root.listFiles()) {
             if(!file.isHidden()) {
-                String name = file.getName() + (file.isDirectory() ? "/" : "");
-                f.format(name + "%n");
+                try {
+                    String hostName = InetAddress.getLocalHost().getCanonicalHostName();
+                    URL url = new URL("http",hostName,8080,"");
+                    String name = file.getName() + (file.isDirectory() ? "/" : "");
+                    String link = new URI(null, path + name, null).toASCIIString();
+                    String encode = URLEncoder.encode(url + name, "UTF-8");
+
+                    f.format(" <a href=\"%s\">%s</a>%n", link, name);
+
+                }catch (Throwable t){
+
+                    logger.error("Something went wrong!",t);
+                    //f.format(name + "%n");
+                }
             }
         }
         f.format("</pre></body></html>");
@@ -156,10 +171,15 @@ public class FileContextHandler implements Handler {
         Map<String, String> headers = httpRequest.getHeaders();
         // If-Match
         String ifMatchHeader = headers.get("If-Match");
-        String[] etags = ifMatchHeader.split(",");
 
-        if (ifMatchHeader != null && !isMatching(true, etags, etag))
-            return PRECONDITION_FAILED;
+
+        if (ifMatchHeader != null ){
+            String[] etags = ifMatchHeader.split(",");
+            if(!isMatching(true, etags, etag)){
+                return PRECONDITION_FAILED;
+            }
+        }
+
         // If-Unmodified-Since
         /**
          * The If-Unmodified-Since request-header field is used with a method to
@@ -173,9 +193,12 @@ public class FileContextHandler implements Handler {
          a 412 (Precondition Failed).
          */
         String ifUnmodifiedSinceStr = headers.get("If-Unmodified-Since");
-        Date ifUnmodifiedSince = getDate(ifUnmodifiedSinceStr);
-        if (ifUnmodifiedSince != null && lastModified > ifUnmodifiedSince.getTime())
-            return PRECONDITION_FAILED;
+
+        if (ifUnmodifiedSinceStr != null) {
+            Date ifUnmodifiedSince = getDate(ifUnmodifiedSinceStr);
+            if (ifUnmodifiedSince != null && lastModified > ifUnmodifiedSince.getTime())
+                return PRECONDITION_FAILED;
+        }
         // If-Modified-Since
         int status = Status.OK.getRequestStatus();
         boolean force = false;
@@ -187,13 +210,17 @@ public class FileContextHandler implements Handler {
          be returned without any message-body.
          */
         String ifModifiedSinceStr = headers.get("If-Modified-Since");
-        Date ifModifiedSince = getDate(ifModifiedSinceStr);
-        if (ifModifiedSince != null && ifModifiedSince.getTime() <= System.currentTimeMillis()) {
-            if (lastModified > ifModifiedSince.getTime())
-                force = true;
-            else
-                status = NOT_MODIFIED;
+        if(ifModifiedSinceStr != null){
+            Date ifModifiedSince = getDate(ifModifiedSinceStr);
+            if (ifModifiedSince != null && ifModifiedSince.getTime() <= System.currentTimeMillis()) {
+                if (lastModified > ifModifiedSince.getTime())
+                    force = true;
+                else
+                    status = NOT_MODIFIED;
+            }
         }
+
+
         /**
          * A client that has one or more entities previously
          obtained from the resource can verify that none of those entities is
@@ -208,8 +235,9 @@ public class FileContextHandler implements Handler {
 
          */
         String ifNoneMatchHeader = headers.get("If-None-Match");
-        String[] none = ifNoneMatchHeader.split(",");
+
         if (ifNoneMatchHeader != null) {
+            String[] none = ifNoneMatchHeader.split(",");
             if (isMatching(false, none, etag)) // RFC7232#3.2: use weak matching
                 status = httpRequest.getMethod().equals("GET") ? NOT_MODIFIED : PRECONDITION_FAILED;
             else
