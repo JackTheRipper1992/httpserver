@@ -2,7 +2,7 @@
 
 This is a HTTP 1.1 compliant server capable of serving files and folders from the base directory provided at the time of the start up of the server. The server can lists the files if URI is a directory or it will display the file if resource in given URI is of Content-Type is text/html.
 
-Usage : java <<directory>> <<port>> <<Optional true|false> com.sk.webserver.main.Main
+Usage : java <<directory>> <<port>> <<Optional true|false>> com.sk.webserver.main.Main
   
   E.g:
         java "/Users/saurabhkakar/Desktop" 8080 com.sk.webserver.main.Main
