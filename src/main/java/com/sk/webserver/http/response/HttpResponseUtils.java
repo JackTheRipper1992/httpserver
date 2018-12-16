@@ -42,9 +42,8 @@ public class HttpResponseUtils {
     protected static final Map<String, String> contentTypes =
             new ConcurrentHashMap<String, String>();
 
+    // see http://www.iana.org/assignments/media-types/ for full list
     static {
-        // add some default common content types
-        // see http://www.iana.org/assignments/media-types/ for full list
         addContentType("application/font-woff", "woff");
         addContentType("application/font-woff2", "woff2");
         addContentType("application/java-archive", "jar");
@@ -76,39 +75,7 @@ public class HttpResponseUtils {
             contentTypes.put(suffix.toLowerCase(Locale.US), contentType.toLowerCase(Locale.US));
     }
 
-    /**
-     * Returns an HTML-escaped version of the given string for safe display
-     * within a web page. The characters '&amp;', '&gt;' and '&lt;' must always
-     * be escaped, and single and double quotes must be escaped within
-     * attribute values; this method escapes them always. This method can
-     * be used for generating both HTML and XHTML valid content.
-     *
-     * @param s the string to escape
-     * @return the escaped string
-     * @see <a href="http://www.w3.org/International/questions/qa-escapes">The W3C FAQ</a>
-     */
-    public static String escapeHTML(String s) {
-        int len = s.length();
-        StringBuilder sb = new StringBuilder(len + 30);
-        int start = 0;
-        for (int i = 0; i < len; i++) {
-            String ref = null;
-            switch (s.charAt(i)) {
-                case '&': ref = "&amp;"; break;
-                case '>': ref = "&gt;"; break;
-                case '<': ref = "&lt;"; break;
-                case '"': ref = "&quot;"; break;
-                case '\'': ref = "&#39;"; break;
-            }
-            if (ref != null) {
-                sb.append(s.substring(start, i)).append(ref);
-                start = i + 1;
-            }
-        }
-        return start == 0 ? s : sb.append(s.substring(start)).toString();
-    }
-
-    public static String getContentType(String path, String def) {
+    public static String getContentType(final String path, final String def) {
         int dot = path.lastIndexOf('.');
         String type = dot < 0 ? def : contentTypes.get(path.substring(dot + 1).toLowerCase(Locale.US));
         return type != null ? type : def;

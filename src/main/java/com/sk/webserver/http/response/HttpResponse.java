@@ -1,7 +1,8 @@
 package com.sk.webserver.http.response;
 
 import com.sk.webserver.http.request.HttpRequest;
-import com.sk.webserver.utils.HttpUtils;
+import com.sk.webserver.http.utils.HttpUtils;
+import static org.apache.commons.lang3.StringEscapeUtils.escapeHtml4;
 
 import java.io.*;
 import java.net.URI;
@@ -9,7 +10,7 @@ import java.net.URISyntaxException;
 import java.util.HashMap;
 import java.util.Map;
 
-import static com.sk.webserver.http.response.HttpResponseUtils.escapeHTML;
+
 import static com.sk.webserver.http.response.HttpResponseUtils.statuses;
 
 public class HttpResponse implements Closeable {
@@ -20,7 +21,7 @@ public class HttpResponse implements Closeable {
     private boolean responseFlushed;
 
 
-    public HttpResponse(OutputStream out, HttpRequest httpRequest) {
+    public HttpResponse(final OutputStream out, final HttpRequest httpRequest) {
         this.out = out;
         this.httpRequest = httpRequest;
     }
@@ -43,30 +44,27 @@ public class HttpResponse implements Closeable {
      * @param text   the text body (sent as text/html)
      * @throws IOException if an error occurs
      */
-    public void sendError(int status, String text) throws IOException {
+    public void sendError(final int status, final String text) throws IOException {
         send(status, String.format(
                 "<!DOCTYPE html>%n<html>%n<head><title>%d %s</title></head>%n" +
                         "<body><h1>%d %s</h1>%n<p>%s</p>%n</body></html>",
-                status, statuses[status], status, statuses[status], escapeHTML(text)));
+                status, statuses[status], status, statuses[status], escapeHtml4(text)));
     }
 
-    public void sendError(int status) throws IOException {
+    public void sendError(final int status) throws IOException {
         String text = status < 400 ? ":)" : "sorry it didn't work out :(";
         sendError(status, text);
     }
 
     /**
-     * Sends the full response with the given status, and the given string
-     * as the body. The text is sent in the UTF-8 charset. If a
-     * Content-Type header was not explicitly set, it will be set to
-     * text/html, and so the text must contain valid (and properly
-     * {@link HttpResponseUtils#escapeHTML escaped}) HTML.
+     * Sends the response with the given status, and the given string
+     * as the body.
      *
      * @param status the response status
      * @param text   the text body (sent as text/html)
      * @throws IOException if an error occurs
      */
-    public void send(int status, String text) throws IOException {
+    public void send(final int status, final String text) throws IOException {
         byte[] content = text.getBytes("UTF-8");
         sendHeaders(status, content.length, -1,
                 "W/\"" + Integer.toHexString(text.hashCode()) + "\"",
@@ -77,19 +75,12 @@ public class HttpResponse implements Closeable {
 
     /**
      * Sends the response headers, including the given response status
-     * and description, and all response headers. If they do not already
-     * exist, the following headers are added as necessary:
-     * Content-Range, Content-Type, Transfer-Encoding, Content-Encoding,
-     * Content-Length, Last-Modified, ETag, Connection  and Date. Ranges are
-     * properly calculated as well, with a 200 status changed to a 206 status.
-     *
+     * and description, and all response headers.
      * @param status       the response status
      * @param length       the response body length
      * @param lastModified the last modified date of the response resource,
-     * @param etag         the ETag of the response resource, or null if unknown
-     *                     (see RFC2616#3.11)
+     * @param etag         the ETag of the response resource
      * @param contentType  the content type of the response resource, or null
-     *                     if unknown (in which case "application/octet-stream" will be sent)
      * @throws IOException if an error occurs
      */
     public void sendHeaders(final int status,
@@ -126,7 +117,7 @@ public class HttpResponse implements Closeable {
      * @throws IOException if an error occurs or headers were already sent
      * @see #sendHeaders(int, long, long, String, String)
      */
-    public void sendHeaders(int status) throws IOException {
+    public void sendHeaders(final int status) throws IOException {
 
         if (!headers.containsKey("Date"))
             headers.put("Date", HttpUtils.getServerTime());
@@ -164,26 +155,26 @@ public class HttpResponse implements Closeable {
         }
     }
 
-    public void addHeader(String header, String value) {
+    public void addHeader(final String header, final String value) {
         this.headers.put(header, value);
     }
 
-    public void removeHeader(String header) {
+    public void removeHeader(final String header) {
         this.headers.remove(header);
     }
 
-    public void addAll(Map<String, String> headers) {
+    public void addAll(final Map<String, String> headers) {
         for (Map.Entry<String, String> headerEntry : headers.entrySet())
             this.headers.put(headerEntry.getKey(), headerEntry.getValue());
     }
 
-    public String replace(String name, String value) {
+    public String replace(final String name, final String value) {
         return headers.put(name, value);
 
     }
 
 
-    public void writeTo(OutputStream out) throws IOException {
+    public void writeTo(final OutputStream out) throws IOException {
         for (Map.Entry<String, String> headerEntry : headers.entrySet()) {
             out.write(HttpUtils.getBytes(headerEntry.getKey(), ": ", headerEntry.getValue()));
             out.write(HttpUtils.getBytes("\n"));
@@ -195,6 +186,10 @@ public class HttpResponse implements Closeable {
         return headers;
     }
 
+    /**
+     * @return true if response has already been written to output stream of
+     * client socket else false
+     */
     public boolean isResponseFlushed() {
         return responseFlushed;
     }

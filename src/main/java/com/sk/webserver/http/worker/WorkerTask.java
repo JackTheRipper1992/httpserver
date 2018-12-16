@@ -1,29 +1,22 @@
-package com.sk.webserver.worker;
+package com.sk.webserver.http.worker;
 
-import com.sk.webserver.http.handlers.FileContextHandler;
 import com.sk.webserver.http.handlers.Handler;
 import com.sk.webserver.http.request.HttpMethod;
 import com.sk.webserver.http.request.HttpRequest;
 import com.sk.webserver.http.parser.RequestParser;
 import com.sk.webserver.http.parser.RequestParserFactory;
 import com.sk.webserver.http.response.HttpResponse;
-import com.sk.webserver.http.validator.Validator;
-import com.sk.webserver.server.ServerContext;
-import com.sk.webserver.utils.HttpUtils;
+import com.sk.webserver.http.server.ServerContext;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.*;
 import java.net.Socket;
 import java.net.SocketException;
-import java.net.SocketTimeoutException;
-import java.util.Arrays;
-import java.util.LinkedHashSet;
 import java.util.Map;
-import java.util.Set;
 
-import static com.sk.webserver.utils.HttpUtils.getParentPath;
-import static com.sk.webserver.utils.HttpUtils.trimRight;
+import static com.sk.webserver.http.utils.HttpUtils.getParentPath;
+import static com.sk.webserver.http.utils.HttpUtils.trimRight;
 import static java.lang.String.join;
 
 public class WorkerTask implements Task {
@@ -60,7 +53,7 @@ public class WorkerTask implements Task {
                 logger.info("{}", httpRequest);
                 httpResponse = new HttpResponse(out, httpRequest);
 
-                //if(validateHttpRequest(httpRequest,httpResponse))
+                //if(validateHttpRequest(httpRequest,httpResponse)) //todo run validators on request.
                 handleRequest(httpRequest, httpResponse); //handle the request
 
             }catch(Throwable throwable){

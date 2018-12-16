@@ -1,14 +1,9 @@
-package com.sk.webserver.utils;
+package com.sk.webserver.http.utils;
 
-import com.sk.webserver.http.parser.HttpRequestParser;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.Closeable;
-import java.io.IOException;
 import java.io.UnsupportedEncodingException;
-import java.net.ServerSocket;
-import java.net.Socket;
 import java.net.URLDecoder;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -18,7 +13,6 @@ import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
-import java.util.logging.Level;
 
 public class HttpUtils {
 

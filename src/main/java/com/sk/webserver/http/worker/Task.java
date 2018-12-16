@@ -1,7 +1,6 @@
-package com.sk.webserver.worker;
+package com.sk.webserver.http.worker;
 
 import java.io.IOException;
-import java.net.Socket;
 
 public interface Task {
 

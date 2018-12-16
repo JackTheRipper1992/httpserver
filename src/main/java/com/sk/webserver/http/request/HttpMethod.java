@@ -7,7 +7,7 @@ public enum HttpMethod {
     OPTIONS,
     TRACE;
 
-    public static HttpMethod lookup(String method) {
+    public static HttpMethod lookup(final String method) {
         if (method == null)
             return null;
 

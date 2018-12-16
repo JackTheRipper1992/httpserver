@@ -14,7 +14,7 @@ public class HttpRequestBuilder {
 
     private HttpMethod method;
 
-    private Map<String, List<String>> parms = new HashMap<>();
+    private Map<String, List<String>> params = new HashMap<>();
 
     private Map<String, String> headers = new HashMap<>();
 
@@ -36,7 +36,7 @@ public class HttpRequestBuilder {
         return new HttpRequest(
         uri ,
         method ,
-        parms ,
+        params ,
         headers ,
         queryParameterString ,
         remoteIp ,
@@ -46,47 +46,47 @@ public class HttpRequestBuilder {
         );
 
     }
-    public HttpRequestBuilder addHeader(String header,String value) {
+    public HttpRequestBuilder addHeader(final String header,final String value) {
         this.headers.put(header,value);
         return this;
     }
 
-    public HttpRequestBuilder setUri(URI uri) {
+    public HttpRequestBuilder setUri(final URI uri) {
         this.uri = uri;
         return this;
     }
 
-    public HttpRequestBuilder setMethod(HttpMethod method) {
+    public HttpRequestBuilder setMethod(final HttpMethod method) {
         this.method = method;
         return this;
     }
 
-    public HttpRequestBuilder setParms(Map<String, List<String>> parms) {
-        this.parms = parms;
+    public HttpRequestBuilder setParms(final Map<String, List<String>> params) {
+        this.params = params;
         return this;
     }
 
-    public HttpRequestBuilder setHeaders(Map<String, String> headers) {
+    public HttpRequestBuilder setHeaders(final Map<String, String> headers) {
         this.headers = headers;
         return this;
     }
 
-    public HttpRequestBuilder setQueryParameterString(String queryParameterString) {
+    public HttpRequestBuilder setQueryParameterString(final String queryParameterString) {
         this.queryParameterString = queryParameterString;
         return this;
     }
 
-    public HttpRequestBuilder setRemoteIp(String remoteIp) {
+    public HttpRequestBuilder setRemoteIp(final String remoteIp) {
         this.remoteIp = remoteIp;
         return this;
     }
 
-    public HttpRequestBuilder setRemoteHostname(String remoteHostname) {
+    public HttpRequestBuilder setRemoteHostname(final String remoteHostname) {
         this.remoteHostname = remoteHostname;
         return this;
     }
 
-    public HttpRequestBuilder setProtocolVersion(String protocolVersion) {
+    public HttpRequestBuilder setProtocolVersion(final String protocolVersion) {
         this.protocolVersion = protocolVersion;
         return this;
     }

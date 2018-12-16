@@ -1,6 +1,5 @@
-package com.sk.webserver.server;
+package com.sk.webserver.http.server;
 
-import com.sk.webserver.http.handlers.FileContextHandler;
 import com.sk.webserver.http.handlers.Handler;
 import com.sk.webserver.http.request.HttpMethod;
 

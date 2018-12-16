@@ -12,9 +12,9 @@ import java.util.Date;
 import java.util.Map;
 
 import static com.sk.webserver.http.response.HttpResponseUtils.getContentType;
-import static com.sk.webserver.utils.HttpUtils.formatDate;
-import static com.sk.webserver.utils.HttpUtils.getDate;
-import static com.sk.webserver.utils.HttpUtils.isMatching;
+import static com.sk.webserver.http.utils.HttpUtils.formatDate;
+import static com.sk.webserver.http.utils.HttpUtils.getDate;
+import static com.sk.webserver.http.utils.HttpUtils.isMatching;
 
 public class FileContextHandler implements Handler {
 
@@ -26,11 +26,15 @@ public class FileContextHandler implements Handler {
     }
 
     @Override
-    public int execute(HttpRequest httpRequest, HttpResponse httpResponse) throws IOException {
+    public int execute(final HttpRequest httpRequest,
+                       final HttpResponse httpResponse) throws IOException {
         return getFile(root, httpRequest.getUri().getPath(), httpRequest, httpResponse);
     }
 
-    private int getFile(File root, String uri, HttpRequest httpRequest, HttpResponse httpResponse) throws IOException {
+    private int getFile(final File root,
+                        final String uri,
+                        final HttpRequest httpRequest,
+                        final HttpResponse httpResponse) throws IOException {
         String relativePath = uri;
         File file = new File(root, relativePath).getCanonicalFile();
         if (!file.exists() || file.isHidden() || file.getName().startsWith(".")) {
@@ -62,7 +66,9 @@ public class FileContextHandler implements Handler {
      * @param httpResponse the response into which the content is written
      * @throws IOException if an error occurs
      */
-    public static void serveFileContent(File file, HttpRequest httpRequest, HttpResponse httpResponse) throws IOException {
+    public static void serveFileContent(final File file,
+                                        final HttpRequest httpRequest,
+                                        final HttpResponse httpResponse) throws IOException {
         long len = file.length();
         long lastModified = file.lastModified();
         String etag = "W/\"" + lastModified + "\""; // a weak tag based on date
@@ -164,7 +170,19 @@ public class FileContextHandler implements Handler {
             else
                 status = NOT_MODIFIED;
         }
-        // If-None-Match
+        /**
+         * A client that has one or more entities previously
+         obtained from the resource can verify that none of those entities is
+         current by including a list of their associated entity tags in the
+         If-None-Match header field
+
+         If none of the entity tags match, then the server MAY perform the
+         requested method as if the If-None-Match header field did not exist,
+         but MUST also ignore any If-Modified-Since header field(s) in the
+         request. That is, if no entity tags match, then the server MUST NOT
+         return a 304 (Not Modified) response.
+
+         */
         String ifNoneMatchHeader = headers.get("If-None-Match");
         String[] none = ifNoneMatchHeader.split(",");
         if (ifNoneMatchHeader != null) {

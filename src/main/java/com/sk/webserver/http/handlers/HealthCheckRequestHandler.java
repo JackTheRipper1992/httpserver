@@ -11,7 +11,8 @@ public class HealthCheckRequestHandler implements Handler{
     private static final String text = "OK";
 
     @Override
-    public int execute(HttpRequest httpRequest, HttpResponse httpResponse) throws IOException {
+    public int execute(final HttpRequest httpRequest,
+                       final HttpResponse httpResponse) throws IOException {
         httpResponse.getHeaders().put("Content-Type", "text/plain");
         httpResponse.send(status, text);
         return 0;

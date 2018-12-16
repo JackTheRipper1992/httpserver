@@ -1,8 +1,8 @@
-package com.sk.webserver.server;
+package com.sk.webserver.http.server;
 
 import com.sk.webserver.http.handlers.Handler;
 import com.sk.webserver.http.request.HttpMethod;
-import com.sk.webserver.worker.WorkerTask;
+import com.sk.webserver.http.worker.WorkerTask;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -11,7 +11,7 @@ import java.net.Socket;
 import java.util.HashMap;
 import java.util.Map;
 
-import static com.sk.webserver.utils.HttpUtils.trimRight;
+import static com.sk.webserver.http.utils.HttpUtils.trimRight;
 
 
 public class HttpServer extends AbstractHttpServer {
