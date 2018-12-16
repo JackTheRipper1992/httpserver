@@ -7,6 +7,8 @@ import static org.apache.commons.lang3.StringEscapeUtils.escapeHtml4;
 import java.io.*;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.net.URL;
+import java.net.URLEncoder;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -196,7 +198,8 @@ public class HttpResponse implements Closeable {
 
     public void redirect(String url) throws IOException {
         try {
-            url = new URI(url).toASCIIString();
+            String encode = URLEncoder.encode(url, "UTF-8");
+            url = new URI(encode).toASCIIString();
         } catch (URISyntaxException e) {
             throw new IOException("malformed URL: " + url);
         }

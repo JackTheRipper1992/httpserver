@@ -8,20 +8,24 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.InetAddress;
+import java.net.URL;
 import java.util.Date;
+import java.util.Formatter;
+import java.util.Locale;
 import java.util.Map;
 
 import static com.sk.webserver.http.response.HttpResponseUtils.getContentType;
-import static com.sk.webserver.http.utils.HttpUtils.formatDate;
-import static com.sk.webserver.http.utils.HttpUtils.getDate;
-import static com.sk.webserver.http.utils.HttpUtils.isMatching;
+import static com.sk.webserver.http.utils.HttpUtils.*;
 
 public class FileContextHandler implements Handler {
 
     public static final int PRECONDITION_FAILED = Status.PRECONDITION_FAILED.getRequestStatus();
     public static final int NOT_MODIFIED = Status.NOT_MODIFIED.getRequestStatus();
+
     protected final File root ;
-    public FileContextHandler(File dir) throws IOException {
+
+    public FileContextHandler(final File dir) throws IOException {
         this.root = dir.getCanonicalFile();
     }
 
@@ -39,14 +43,17 @@ public class FileContextHandler implements Handler {
         File file = new File(root, relativePath).getCanonicalFile();
         if (!file.exists() || file.isHidden() || file.getName().startsWith(".")) {
             return 404;
-        } else if (!file.canRead() || !file.getPath().startsWith(root.getPath())) { // validate
+        } else if (!file.canRead()) {
             return 403;
         } else if (file.isDirectory()) {
             if (relativePath.endsWith("/")) {
 
-                httpResponse.send(200, "Success");
-            } else { // redirect to the normalized directory URL ending with '/'
-                httpResponse.redirect(httpRequest.getUrl() + httpRequest.getPath() + "/");
+                httpResponse.send(200, listFiles(file,httpRequest.getPath()));
+            } else { // redirect to the directory URL ending with '/'
+                String hostName = InetAddress.getLocalHost().getCanonicalHostName();
+                URL url = new URL("http",hostName,8080,"");
+                httpResponse.redirect( url + httpRequest.getPath() + "/");
+
             }
         } else if (relativePath.endsWith("/")) {
             return 404; // non-directory ending with slash (File constructor removed it)
@@ -54,6 +61,24 @@ public class FileContextHandler implements Handler {
             serveFileContent(file, httpRequest, httpResponse);
         }
         return 0;
+    }
+
+    private String listFiles(File root, String path) {
+        Formatter f = new Formatter(Locale.US);
+        f.format("<!DOCTYPE html>" +
+                        "<html><head><title>Index of %s</title></head>%n" +
+                        "<body><h1>Index of %s</h1>%n" +
+                        "<pre> Name",
+                path, path, "");
+        for (File file : root.listFiles()) {
+            if(!file.isHidden()) {
+                String name = file.getName() + (file.isDirectory() ? "/" : "");
+                f.format(name + "%n");
+            }
+        }
+        f.format("</pre></body></html>");
+        return f.toString();
+
     }
 
     /**

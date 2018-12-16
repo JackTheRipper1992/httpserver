@@ -1,6 +1,5 @@
 package com.sk.webserver.http.parser;
 
-import java.io.InputStream;
 import java.net.Socket;
 
 public class RequestParserFactory {

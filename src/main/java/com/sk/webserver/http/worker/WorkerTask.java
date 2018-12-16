@@ -6,6 +6,7 @@ import com.sk.webserver.http.request.HttpRequest;
 import com.sk.webserver.http.parser.RequestParser;
 import com.sk.webserver.http.parser.RequestParserFactory;
 import com.sk.webserver.http.response.HttpResponse;
+import com.sk.webserver.http.response.Status;
 import com.sk.webserver.http.server.ServerContext;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -62,25 +63,21 @@ public class WorkerTask implements Task {
                 }
                 if (httpRequest == null) { // error reading request
                     if (throwable instanceof IOException && throwable.getMessage().contains("Request Line Missing"))
-                        break; // proceed to close connection - just disconnect
-                    httpResponse.getHeaders().put("Connection", "close"); // about to close connection
-                    if (throwable instanceof InterruptedIOException) // e.g. SocketTimeoutException
-                        httpResponse.sendError(408, "Timeout waiting for client request");
-                    else
-                        httpResponse.sendError(400, "Invalid request: " + throwable.getMessage());
+                        break;
+                    httpResponse.getHeaders().put("Connection", "close");
+                    httpResponse.sendError(400, "Invalid request: " + throwable.getMessage());
                 } else if (!httpResponse.isResponseFlushed()) { // if headers were not already sent, we can send an error response
                     httpResponse = new HttpResponse(out,httpRequest); // ignore whatever headers may have already been set
                     httpResponse.getHeaders().put("Connection", "close"); // about to close connection
                     httpResponse.sendError(500, "Error processing request: " + throwable.getMessage());
-                } // otherwise just abort the connection since we can't recover
-                break; // proceed to close connection
+                }
+                break;
             }
             finally {
                 httpResponse.close(); // close response and flush output
             }
-        }while (!"close".equalsIgnoreCase(httpRequest.getHeaders().get("Connection"))         //Persistent Connection HTTP 1.1
+        } while (!"close".equalsIgnoreCase(httpRequest.getHeaders().get("Connection"))         //Persistent Connection HTTP 1.1
                 && !"close".equalsIgnoreCase(httpResponse.getHeaders().get("Connection")) && httpRequest.getProtocolVersion().endsWith("1.1"));
-
     }
 
     private void handleRequest(HttpRequest httpRequest, HttpResponse httpResponse) throws IOException {
@@ -88,12 +85,12 @@ public class WorkerTask implements Task {
         if(handler != null) {
             handler.execute(httpRequest, httpResponse);
         } else
-            httpResponse.sendError(501); // unsupported method
+            httpResponse.sendError(Status.NOT_IMPLEMENTED.getRequestStatus());
     }
 
     public Handler getContext(String path,
                               final HttpMethod httpMethod) {
-        // all context paths are without trailing slash
+
         Map<String, Map<HttpMethod,Handler>> contextMap = serverContext.getContextMap();
         for (path = trimRight(path, '/'); path != null; path = getParentPath(path)) {
             Map<HttpMethod,Handler> handlerByMethod = contextMap.get(path);
