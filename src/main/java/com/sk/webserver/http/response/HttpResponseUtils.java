@@ -16,27 +16,22 @@ public class HttpResponseUtils {
         statuses[100] = "Continue";
         statuses[200] = "OK";
         statuses[204] = "No Content";
-        statuses[206] = "Partial Content";
         statuses[301] = "Moved Permanently";
         statuses[302] = "Found";
         statuses[304] = "Not Modified";
-        statuses[307] = "Temporary Redirect";
         statuses[400] = "Bad Request";
-        statuses[401] = "Unauthorized";
         statuses[403] = "Forbidden";
         statuses[404] = "Not Found";
         statuses[405] = "Method Not Allowed";
         statuses[408] = "Request Timeout";
         statuses[412] = "Precondition Failed";
-        statuses[413] = "Request Entity Too Large";
         statuses[414] = "Request-URI Too Large";
-        statuses[416] = "Requested Range Not Satisfiable";
         statuses[417] = "Expectation Failed";
         statuses[500] = "Internal Server Error";
         statuses[501] = "Not Implemented";
         statuses[502] = "Bad Gateway";
         statuses[503] = "Service Unavailable";
-        statuses[504] = "Gateway Time-out";
+        
     }
 
     protected static final Map<String, String> contentTypes =
