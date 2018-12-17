@@ -7,8 +7,6 @@ Usage : java <<directory>> <<port>> <<Optional true|false>> com.sk.webserver.mai
   E.g:
         java "/Users/saurabhkakar/Desktop" 8080 com.sk.webserver.main.Main
 
-You can also pass the optional 3rd argument that will enable the health check for the server by adding the scheduler thread. Health Check scheduler thread periodically sends the health check request to the server using /healthCheck uri.
-
 As the main purpose of this server is to fetch the file/directory from the hosted root, server is configured to only cater HTTP GET and OPTIONS requests. You can check the server OPTIONS by sending OPTIONS http request /* .
 
 The server is capable of serving same URI with different HTTP method by different handlers. For this I have contextMap declared as a Map in AbstractHttpServer. The context map has a path as a key and value for the key path is another map having key is HTTP method and corresponding handler that will handle the request.
