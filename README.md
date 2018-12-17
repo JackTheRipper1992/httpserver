@@ -28,3 +28,5 @@ This server does not support SSL.
 # Refernces :
 
 https://www.ietf.org/rfc/rfc2616.txt
+Various resources on Internet
+
