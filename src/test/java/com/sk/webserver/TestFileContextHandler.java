@@ -51,7 +51,7 @@ public class TestFileContextHandler {
 
         HttpRequest httpRequest = createHttpRequest("/");
         HttpResponse httpResponse = new HttpResponse(byteArrayOutputStream,httpRequest);
-        int status = fileContextHandler.execute(httpRequest, httpResponse);
+        fileContextHandler.execute(httpRequest, httpResponse);
         ByteArrayInputStream in = new ByteArrayInputStream(byteArrayOutputStream.toByteArray());
         int n = in.available();
         byte[] bytes = new byte[n];
@@ -75,13 +75,13 @@ public class TestFileContextHandler {
 
 
     @Test
-    public void testSearchDiretoryAsFile() throws IOException, URISyntaxException {
+    public void testSearchDirectoryAsFile() throws IOException, URISyntaxException {
         final ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
         when(socket.getOutputStream()).thenReturn(byteArrayOutputStream);
 
         HttpRequest httpRequest = createHttpRequest("/Geet%20DS-160_files");
         HttpResponse httpResponse = new HttpResponse(byteArrayOutputStream,httpRequest);
-        int status = fileContextHandler.execute(httpRequest, httpResponse);
+        fileContextHandler.execute(httpRequest, httpResponse);
         ByteArrayInputStream in = new ByteArrayInputStream(byteArrayOutputStream.toByteArray());
         int n = in.available();
         byte[] bytes = new byte[n];
@@ -91,6 +91,22 @@ public class TestFileContextHandler {
 
     }
 
+    @Test
+    public void testLocationHeaderWhenDirectoryPathInvalid() throws IOException, URISyntaxException {
+        final ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
+        when(socket.getOutputStream()).thenReturn(byteArrayOutputStream);
+
+        HttpRequest httpRequest = createHttpRequest("/Geet%20DS-160_files");
+        HttpResponse httpResponse = new HttpResponse(byteArrayOutputStream,httpRequest);
+        fileContextHandler.execute(httpRequest, httpResponse);
+        ByteArrayInputStream in = new ByteArrayInputStream(byteArrayOutputStream.toByteArray());
+        int n = in.available();
+        byte[] bytes = new byte[n];
+        in.read(bytes, 0, n);
+        String s = new String(bytes, StandardCharsets.UTF_8); // Or any encoding.
+        Assert.assertTrue(s.contains("Location"));
+
+    }
     private HttpRequest createHttpRequest(String path) throws URISyntaxException {
 
         return new HttpRequestBuilder().setProtocolVersion("HTTP1.1")

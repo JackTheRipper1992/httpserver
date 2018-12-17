@@ -13,6 +13,7 @@ As the main purpose of this server is to fetch the file/directory from the hoste
 
 The server is capable of serving same URI with different HTTP method by different handlers. For this I have contextMap declared as a Map in AbstractHttpServer. The context map has a path as a key and value for the key path is another map having key is HTTP method and corresponding handler that will handle the request.
 
+This server does not support SSL.
 
 # Improvements :
 
@@ -20,6 +21,8 @@ The server is capable of serving same URI with different HTTP method by differen
 2. We can make our server reactive by implementing Reactive Programming such as RxJava. 
 3. Scope of test coverage needs to be improved.
 4. Add the support for other HTTP methods.
+5. Add the support for SSL.
+
 
 
 # Refernces :

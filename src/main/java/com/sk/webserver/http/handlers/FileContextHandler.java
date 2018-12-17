@@ -74,13 +74,9 @@ public class FileContextHandler implements Handler {
         for (File file : root.listFiles()) {
             if(!file.isHidden()) {
                 try {
-                    String hostName = InetAddress.getLocalHost().getCanonicalHostName();
-                    URL url = new URL("http",hostName,8080,"");
                     String name = file.getName() + (file.isDirectory() ? "/" : "");
                     String link = new URI(null, path + name, null).toASCIIString();
-                    String encode = URLEncoder.encode(url + name, "UTF-8");
-
-                    f.format(" <a href=\"%s\">%s</a>%n", link, name);
+                    f.format(" <a href=%s>%s</a>%n", link, name);
 
                 }catch (Throwable t){
 
@@ -212,9 +208,9 @@ public class FileContextHandler implements Handler {
             Date ifModifiedSince = getDate(ifModifiedSinceStr);
             if (ifModifiedSince != null && ifModifiedSince.getTime() <= System.currentTimeMillis()) {
                 if (lastModified > ifModifiedSince.getTime())
-                    force = true;
+                    force = true; //file has been modified, send it to the client
                 else
-                    status = NOT_MODIFIED;
+                    status = NOT_MODIFIED; //file not modified, return NOT_MODIFIED
             }
         }
 

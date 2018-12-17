@@ -9,7 +9,6 @@ import org.slf4j.LoggerFactory;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
-import java.net.InetAddress;
 import java.net.Socket;
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -31,12 +30,13 @@ public class HttpRequestParser implements RequestParser {
     public HttpRequest parse() throws IOException {
 
         BufferedReader in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
-        createHeaderAndParams(httpRequestBuilder,in);
+        parseHeaders(httpRequestBuilder,in);
         return httpRequestBuilder.create();
 
     }
 
-    private void createHeaderAndParams(HttpRequestBuilder httpRequestBuilder, BufferedReader in) throws IOException {
+    private void parseHeaders(final HttpRequestBuilder httpRequestBuilder,
+                              final BufferedReader in) throws IOException {
         // read first line of request header
         readFirstLine(in,httpRequestBuilder);
 
@@ -48,11 +48,12 @@ public class HttpRequestParser implements RequestParser {
             }
             line = in.readLine();
         }
-        final InetAddress inetAddress = this.socket.getInetAddress();
+
 
     }
 
-    private void readFirstLine(BufferedReader in, HttpRequestBuilder httpRequestBuilder) throws IOException {
+    private void readFirstLine(final BufferedReader in,
+                               final HttpRequestBuilder httpRequestBuilder) throws IOException {
         String requestLine;
         try {
             do {
